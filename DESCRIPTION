@@ -15,4 +15,5 @@ Imports:
     TraMineR,
     dplyr,
     tidyr,
-    purrr
+    purrr,
+    stringr
