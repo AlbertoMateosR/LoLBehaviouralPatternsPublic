@@ -11,6 +11,23 @@ read_lol_kaggle_dataset <- function(input_df) {
 
   #Data <- dplyr::filter(DataPre, Year > 2016) %>% dplyr::slice(91:nrows(DataPre))
 
+  bDataDragons <- Data %>%
+    mutate(bDragons = purrr::map(bDragons, function(x) {
+      aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
+      asd <- jsonlite::fromJSON(stringr::str_replace_all(aux, "'", '"')) %>%
+        as.data.frame() %>%
+        drop_na()
+    })) %>%
+    filter(purrr::map_lgl(bDragons, ~ nrow(.) > 0)) %>%
+    tidyr::unnest(bDragons) %>%
+    dplyr::select(Address, Timestamp = V1, Event = V2)
+
+  # Save only modern matches (valid addresses that have typed dragons)
+  valid_addresses = unique(bDataDragons$Address)
+
+  # Filter the original Data
+  Data <- Data %>% filter(Address %in% valid_addresses)
+
   bDataTowers <- Data %>%
     mutate(bTowers = purrr::map(bTowers, function(x) {
       jsonlite::fromJSON(stringr::str_replace_all(x, "'", '"')) %>% as.data.frame()
@@ -30,15 +47,6 @@ read_lol_kaggle_dataset <- function(input_df) {
     mutate(Event = purrr::map_chr(Event, function(x) {
       paste(x, "Inhib", sep = "/")
     }))
-
-  #bDataDragons <- Data %>%
-   # mutate(bDragons = purrr::map(bDragons, function(x) {
-    #  aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
-     # asd <- jsonlite::fromJSON(stringr::str_replace_all(aux, "'", '"')) %>%
-      #  as.data.frame()
-    #})) %>%
-    #tidyr::unnest(bDragons) %>%
-    #dplyr::select(Address, Timestamp = v1)
 
   bDataBarons <- Data %>%
     mutate(bBarons = purrr::map(bBarons, function(x) {
@@ -85,6 +93,17 @@ read_lol_kaggle_dataset <- function(input_df) {
   #tidyr::unnest(rDragons) %>%
   #dplyr::select(Address, Timestamp = V1)
 
+  rDataDragons <- Data %>%
+    mutate(rDragons = purrr::map(rDragons, function(x) {
+      aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
+      asd <- jsonlite::fromJSON(stringr::str_replace_all(aux, "'", '"')) %>%
+        as.data.frame() %>%
+        drop_na()
+    })) %>%
+    filter(purrr::map_lgl(rDragons, ~ nrow(.) > 0)) %>%
+    tidyr::unnest(rDragons) %>%
+    dplyr::select(Address, Timestamp = V1, Event = V2)
+
   rDataBarons <- Data %>%
     mutate(rBarons = purrr::map(rBarons, function(x) {
       jsonlite::fromJSON(toString(x)) %>% as.data.frame()
@@ -104,7 +123,7 @@ read_lol_kaggle_dataset <- function(input_df) {
   FinalDataBlue <- bind_rows(bDataTowers, bDataInhibs, bDataBarons, bDataHeralds)
   FinalDataRed <- bind_rows(rDataTowers, rDataInhibs, rDataBarons, rDataHeralds)
 
-  return(FinalDataBlue)
+  return(list(Blue = FinalDataBlue, Red = FinalDataRed))
 }
 
 #print(read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")$bTowers[1])
