@@ -31,17 +31,14 @@ read_lol_kaggle_dataset <- function(input_df) {
       paste(x, "Inhib", sep = "/")
     }))
 
-  bDataDragons <- Data %>%
-    mutate(bDragons = purrr::map(bDragons, function(x) {
-      aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
-      asd <- jsonlite::fromJSON(stringr::str_replace_all(aux, "'", '"')) %>%
-        as.data.frame()
-      View(asd)
-      asd
-        #drop_na(V2)
-    })) %>%
-    tidyr::unnest(bDragons) %>%
-    dplyr::select(Address, Timestamp = V1)
+  #bDataDragons <- Data %>%
+   # mutate(bDragons = purrr::map(bDragons, function(x) {
+    #  aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
+     # asd <- jsonlite::fromJSON(stringr::str_replace_all(aux, "'", '"')) %>%
+      #  as.data.frame()
+    #})) %>%
+    #tidyr::unnest(bDragons) %>%
+    #dplyr::select(Address, Timestamp = v1)
 
   bDataBarons <- Data %>%
     mutate(bBarons = purrr::map(bBarons, function(x) {
@@ -65,7 +62,9 @@ read_lol_kaggle_dataset <- function(input_df) {
     })) %>%
     tidyr::unnest(rTowers) %>%
     dplyr::select(Address, Timestamp = V1 , Lane = V2, Tower_Type = V3) %>%
+    mutate(Timestamp = as.numeric(Timestamp)) %>%
     tidyr::unite("Event", sep = "/", Lane, Tower_Type)
+
 
   rDataInhibs <- Data %>%
     mutate(rInhibs = purrr::map(rInhibs, function(x) {
@@ -73,7 +72,8 @@ read_lol_kaggle_dataset <- function(input_df) {
     })) %>%
     tidyr::unnest(rInhibs) %>%
     dplyr::select(Address, Timestamp = V1, Event = V2) %>%
-    mutate(Event = purrr::map(Event, function(x) {
+    mutate(Timestamp = as.numeric(Timestamp)) %>%
+    mutate(Event = purrr::map_chr(Event, function(x) {
       paste(x, "Inhib", sep = "/")
     }))
 
