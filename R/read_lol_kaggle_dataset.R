@@ -20,7 +20,8 @@ read_lol_kaggle_dataset <- function(input_df) {
     })) %>%
     filter(purrr::map_lgl(bDragons, ~ nrow(.) > 0)) %>%
     tidyr::unnest(bDragons) %>%
-    dplyr::select(Address, Timestamp = V1, Event = V2)
+    dplyr::select(Address, Timestamp = V1, Event = V2) %>%
+    mutate(Timestamp = as.numeric(Timestamp))
 
   # Save only modern matches (valid addresses that have typed dragons)
   valid_addresses = unique(bDataDragons$Address)
@@ -64,6 +65,8 @@ read_lol_kaggle_dataset <- function(input_df) {
     dplyr::select(Address, Timestamp = V1) %>%
     mutate(Event = "Herald")
 
+  #RED TEAM DATA
+
   rDataTowers <- Data %>%
     mutate(rTowers = purrr::map(rTowers, function(x) {
       jsonlite::fromJSON(stringr::str_replace_all(x, "'", '"')) %>% as.data.frame()
@@ -85,14 +88,6 @@ read_lol_kaggle_dataset <- function(input_df) {
       paste(x, "Inhib", sep = "/")
     }))
 
-  #rDataDragons <- Data %>%
-  # mutate(rDragons = purrr::map(rDragons, function(x) {
-  #  elems <- c("'|None")
-  # jsonlite::fromJSON(stringr::str_replace_all(x, elems, '"')) %>% as.data.frame()
-  #})) %>%
-  #tidyr::unnest(rDragons) %>%
-  #dplyr::select(Address, Timestamp = V1)
-
   rDataDragons <- Data %>%
     mutate(rDragons = purrr::map(rDragons, function(x) {
       aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
@@ -102,7 +97,8 @@ read_lol_kaggle_dataset <- function(input_df) {
     })) %>%
     filter(purrr::map_lgl(rDragons, ~ nrow(.) > 0)) %>%
     tidyr::unnest(rDragons) %>%
-    dplyr::select(Address, Timestamp = V1, Event = V2)
+    dplyr::select(Address, Timestamp = V1, Event = V2) %>%
+    mutate(Timestamp = as.numeric(Timestamp))
 
   rDataBarons <- Data %>%
     mutate(rBarons = purrr::map(rBarons, function(x) {
@@ -120,13 +116,19 @@ read_lol_kaggle_dataset <- function(input_df) {
     dplyr::select(Address, Timestamp = V1) %>%
     mutate(Event = "Herald")
 
-  FinalDataBlue <- bind_rows(bDataTowers, bDataInhibs, bDataBarons, bDataHeralds)
-  FinalDataRed <- bind_rows(rDataTowers, rDataInhibs, rDataBarons, rDataHeralds)
+  FinalDataBlue <- bind_rows(bDataTowers, bDataInhibs, bDataBarons, bDataHeralds, bDataDragons)
+  FinalDataRed <- bind_rows(rDataTowers, rDataInhibs, rDataBarons, rDataHeralds, rDataDragons)
 
   return(list(Blue = FinalDataBlue, Red = FinalDataRed))
 }
 
-#print(read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")$bTowers[1])
-#View(read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv"))
-
-
+#res <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")
+#blue <- res$Blue
+#blueai <- blue %>% mutate(Address = as.integer(Address))
+#blueg <- blueai %>% group_by(Address)
+#bluego <- blueg[order(blueg$Address), ]
+#bluegoint <- bluego %>% mutate(Timestamp = as.integer(Timestamp))
+#tseblue <- seqecreate(id = bluegoint$Address, timestamp = bluegoint$Timestamp, event = bluegoint$Event)
+#seqpcplot(tseblue)
+#usando TraMineRextras:
+# se puede usar TSE_to_STS con bluegoint en principio, pero salta un error (list) object cannot be coerced to type 'double'
