@@ -36,7 +36,7 @@ read_lol_kaggle_dataset <- function(input_df) {
     tidyr::unnest(bTowers) %>%
     dplyr::select(Address, Timestamp = V1 , Lane = V2, Tower_Type = V3) %>%
     mutate(Timestamp = as.numeric(Timestamp)) %>%
-    tidyr::unite("Event", sep = "/", Lane, Tower_Type)
+    tidyr::unite("Event", sep = "_", Lane, Tower_Type)
 
   bDataInhibs <- Data %>%
     mutate(bInhibs = purrr::map(bInhibs, function(x) {
@@ -46,7 +46,7 @@ read_lol_kaggle_dataset <- function(input_df) {
     dplyr::select(Address, Timestamp = V1, Event = V2) %>%
     mutate(Timestamp = as.numeric(Timestamp)) %>%
     mutate(Event = purrr::map_chr(Event, function(x) {
-      paste(x, "Inhib", sep = "/")
+      paste(x, "Inhib", sep = "_")
     }))
 
   bDataBarons <- Data %>%
@@ -74,7 +74,7 @@ read_lol_kaggle_dataset <- function(input_df) {
     tidyr::unnest(rTowers) %>%
     dplyr::select(Address, Timestamp = V1 , Lane = V2, Tower_Type = V3) %>%
     mutate(Timestamp = as.numeric(Timestamp)) %>%
-    tidyr::unite("Event", sep = "/", Lane, Tower_Type)
+    tidyr::unite("Event", sep = "_", Lane, Tower_Type)
 
 
   rDataInhibs <- Data %>%
@@ -85,7 +85,7 @@ read_lol_kaggle_dataset <- function(input_df) {
     dplyr::select(Address, Timestamp = V1, Event = V2) %>%
     mutate(Timestamp = as.numeric(Timestamp)) %>%
     mutate(Event = purrr::map_chr(Event, function(x) {
-      paste(x, "Inhib", sep = "/")
+      paste(x, "Inhib", sep = "_")
     }))
 
   rDataDragons <- Data %>%
@@ -126,7 +126,7 @@ read_lol_kaggle_dataset <- function(input_df) {
 #blue <- res$Blue
 #blueai <- blue %>% mutate(Address = as.integer(Address))
 #blueg <- blueai %>% group_by(Address)
-#bluego <- blueg[order(blueg$Address), ]
+#bluego <- blueg[order(blueg$Address, blueg$Timestamp), ]
 #bluegoint <- bluego %>% mutate(Timestamp = as.integer(Timestamp))
 #tseblue <- seqecreate(id = bluegoint$Address, timestamp = bluegoint$Timestamp, event = bluegoint$Event)
 #seqpcplot(tseblue)
