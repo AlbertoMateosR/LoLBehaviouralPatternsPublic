@@ -35,3 +35,18 @@ valid_addresses = inner_join(foo, bar, by = "Address") %>%
   pull(Address)
 data$Blue = data$Blue %>% filter(Address %in% valid_addresses)
 
+
+EJECUCION:
+data <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")
+datap <- post_read_data_filter(data = data)
+sdata <- seqdef(datap$Blue)
+sdata2 <- seqdef(datap$Red)
+sd <- list(sdata, sdata2)
+hmm <- build_hmm(observations = sd, n_states = 5, channel_names = c("Blue", "Red"))
+fit <- fit_hmm(hmm) ???
+
+
+SingleChannel alternative:
+   hmm <- build_hmm(observations = sdata, n_states = 5)
+   fit <- fit_hmm(hmm)
+
