@@ -1,12 +1,15 @@
+
 #' Title
 #'
-#' @param input_df String containing the filepath of the input file
+#' @param data
+#' @param time_step_duration Longitud del intervalo. La funcion debe retornar error si 2
+#' eventos coinciden en el mismo time step
 #'
 #' @return
 #' @export
 #'
 #' @examples
-post_read_data_filter <- function(data) {
+post_read_data_filter <- function(data, time_step_duration = 1) {
   MIN_EVENTS = 5
   foo = data$Blue %>% count(Address)
   bar = data$Red %>% count(Address)
@@ -27,7 +30,7 @@ post_read_data_filter <- function(data) {
       Event == "MID_LANE_OUTER_TURRET" |
         Event == "BOT_LANE_OUTER_TURRET" |
         Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
-      Event == "MID_LANE_NEXUS_TURRET" ~ "OUTER_TURRET",
+      Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
       Event == "MID_LANE_Inhib" |
         Event == "BOT_LANE_Inhib" |
         Event == "TOP_LANE_Inhib" ~ "Inhib",
@@ -51,6 +54,11 @@ post_read_data_filter <- function(data) {
         Event == "TOP_LANE_Inhib" ~ "Inhib",
       TRUE ~ Event
     ))
+
+  # TODO: Discretizar las secuencias
+  # 1. Calcular la partida con mas tiempo
+  # 2. Establecer el numero maximo de time steps que va a haber en base a la longitud
+  # de esa partida y el argumento time_step_duration
 
   aux_blue = blueMutated %>%
     nest(-Address) %>%
