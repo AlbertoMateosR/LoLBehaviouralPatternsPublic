@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-post_read_data_filter <- function(data, time_step_duration = 1) {
+post_read_data_filter <- function(data) {
   MIN_EVENTS = 5
   foo = data$Blue %>% count(Address)
   bar = data$Red %>% count(Address)
@@ -18,6 +18,7 @@ post_read_data_filter <- function(data, time_step_duration = 1) {
     pull(Address)
   data$Blue = data$Blue %>% filter(Address %in% valid_addresses)
   data$Red = data$Red %>% filter(Address %in% valid_addresses)
+  data$GoldDiff = data$GoldDiff %>% filter(Address %in% valid_addresses)
 
   blueMutated <- data$Blue %>%
     mutate(Event, Event = case_when(
@@ -70,12 +71,19 @@ post_read_data_filter <- function(data, time_step_duration = 1) {
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
+  aux_gd = data$GoldDiff %>%
+    nest(-Address) %>%
+    mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
+    mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+
 
   aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows
   rownames(aux_blue_2) = aux_blue$Address
   aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows
   rownames(aux_red_2) = aux_red$Address
+  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(aux_gd_2) = aux_gd$Address
 
   #Estos resultados pueden usarse con seqdef ya que su formato es apto, y despues pueden visualizarse con seqiplot por ejemplo
-  return(list(Blue = aux_blue_2, Red = aux_red_2))
+  return(list(Blue = aux_blue_2, Red = aux_red_2, GoldDiff = aux_gd_2))
 }

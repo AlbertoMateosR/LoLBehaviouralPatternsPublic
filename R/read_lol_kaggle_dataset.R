@@ -119,7 +119,25 @@ read_lol_kaggle_dataset <- function(input_df) {
   FinalDataBlue <- bind_rows(bDataTowers, bDataInhibs, bDataBarons, bDataHeralds, bDataDragons)
   FinalDataRed <- bind_rows(rDataTowers, rDataInhibs, rDataBarons, rDataHeralds, rDataDragons)
 
-  return(list(Blue = FinalDataBlue, Red = FinalDataRed))
+  goldiff <- Data %>%
+    mutate(golddiff = purrr::map(golddiff, function(x) {
+      jsonlite::fromJSON(toString(x)) %>% as.data.frame()
+    })) %>%
+    tidyr::unnest(golddiff) %>%
+    dplyr::select(Address, goldBdiff = ".") %>%
+    group_by(Address) %>%
+    mutate(Timestamp = row_number()) %>%
+    mutate(Event = purrr::map(goldBdiff, function(x) {
+      if(x > 0) {
+        "BWin"
+      } else if (x < 0) {
+        "BLose"
+      } else {
+        "Constat"
+      }
+    }))
+
+  return(list(Blue = FinalDataBlue, Red = FinalDataRed, GoldDiff = goldiff))
 }
 
 #res <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")
