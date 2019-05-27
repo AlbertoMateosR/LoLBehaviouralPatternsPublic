@@ -126,18 +126,21 @@ read_lol_kaggle_dataset <- function(input_df) {
     tidyr::unnest(golddiff) %>%
     dplyr::select(Address, goldBdiff = ".") %>%
     group_by(Address) %>%
-    mutate(Timestamp = row_number()) %>%
-    mutate(Event = purrr::map(goldBdiff, function(x) {
-      if(x > 0) {
-        "BWin"
-      } else if (x < 0) {
-        "BLose"
-      } else {
-        "Constat"
-      }
-    }))
+    mutate(Timestamp = row_number()) #%>%
+    # mutate(Event = purrr::map(goldBdiff, function(x) {
+    #   if(x > 0) {
+    #     "BWin"
+    #   } else if (x < 0) {
+    #     "BLose"
+    #   } else {
+    #     "Constat"
+    #   }
+    # }))
 
-  return(list(Blue = FinalDataBlue, Red = FinalDataRed, GoldDiff = goldiff))
+
+  result <- Data %>% dplyr::select(Address, bResult)
+
+  return(list(Blue = FinalDataBlue, Red = FinalDataRed, GoldDiff = goldiff, Result = result))
 }
 
 #res <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")

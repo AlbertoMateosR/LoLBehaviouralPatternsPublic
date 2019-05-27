@@ -19,6 +19,7 @@ post_read_data_filter <- function(data) {
   data$Blue = data$Blue %>% filter(Address %in% valid_addresses)
   data$Red = data$Red %>% filter(Address %in% valid_addresses)
   data$GoldDiff = data$GoldDiff %>% filter(Address %in% valid_addresses)
+  data$Result = data$Result %>% filter(Address %in% valid_addresses)
 
   blueMutated <- data$Blue %>%
     mutate(Event, Event = case_when(
@@ -56,6 +57,17 @@ post_read_data_filter <- function(data) {
       TRUE ~ Event
     ))
 
+  gdMutated <- data$GoldDiff %>%
+    mutate(goldBdiff, goldBdiff = case_when(
+      goldBdiff <= 2500 & goldBdiff > 0 ~ "bWinLow",
+      goldBdiff <= 6500 & goldBdiff > 2500 ~ "bWinMedium",
+      goldBdiff > 6500 ~ "bWinHight",
+      goldBdiff >= -2500 & goldBdiff < 0 ~ "bLoseLow",
+      goldBdiff >= -6500 & goldBdiff < -2500 ~ "bLoseMedium",
+      goldBdiff < -6500 ~ "bLoseHight",
+      goldBdiff == 0 ~ "Same"
+    )) %>% rename(Event = goldBdiff)
+
   # TODO: Discretizar las secuencias
   # 1. Calcular la partida con mas tiempo
   # 2. Establecer el numero maximo de time steps que va a haber en base a la longitud
@@ -71,18 +83,21 @@ post_read_data_filter <- function(data) {
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
-  aux_gd = data$GoldDiff %>%
+  aux_gd = gdMutated %>%
     nest(-Address) %>%
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
 
-  aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows
+  aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
   rownames(aux_blue_2) = aux_blue$Address
-  aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows
+  aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
   rownames(aux_red_2) = aux_red$Address
-  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows
+  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
   rownames(aux_gd_2) = aux_gd$Address
+
+  results <- Data$Result %>% arrange(Address)
+
 
   #Estos resultados pueden usarse con seqdef ya que su formato es apto, y despues pueden visualizarse con seqiplot por ejemplo
   return(list(Blue = aux_blue_2, Red = aux_red_2, GoldDiff = aux_gd_2))
