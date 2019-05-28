@@ -10,18 +10,8 @@
 #'
 #' @examples
 post_read_data_filter <- function(data) {
-  MIN_EVENTS = 5
-  foo = data$Blue %>% count(Address)
-  bar = data$Red %>% count(Address)
-  valid_addresses = inner_join(foo, bar, by = "Address") %>%
-    dplyr::filter(n.x >= MIN_EVENTS & n.y >= MIN_EVENTS) %>%
-    pull(Address)
-  data$Blue = data$Blue %>% filter(Address %in% valid_addresses)
-  data$Red = data$Red %>% filter(Address %in% valid_addresses)
-  data$GoldDiff = data$GoldDiff %>% filter(Address %in% valid_addresses)
-  data$Result = data$Result %>% filter(Address %in% valid_addresses)
 
-  blueMutated <- data$Blue %>%
+  BEWMutated <- data$BEW %>%
     mutate(Event, Event = case_when(
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
@@ -39,7 +29,7 @@ post_read_data_filter <- function(data) {
       TRUE ~ Event
     ))
 
-  redMutated <- data$Red %>%
+  BELMutated <- data$BEL %>%
     mutate(Event, Event = case_when(
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
@@ -57,7 +47,54 @@ post_read_data_filter <- function(data) {
       TRUE ~ Event
     ))
 
-  gdMutated <- data$GoldDiff %>%
+  REWMutated <- data$REW %>%
+    mutate(Event, Event = case_when(
+      Event == "MID_LANE_BASE_TURRET" |
+        Event == "BOT_LANE_BASE_TURRET" |
+        Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
+      Event == "MID_LANE_INNER_TURRET" |
+        Event == "BOT_LANE_INNER_TURRET" |
+        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
+      Event == "MID_LANE_OUTER_TURRET" |
+        Event == "BOT_LANE_OUTER_TURRET" |
+        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
+      Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
+      Event == "MID_LANE_Inhib" |
+        Event == "BOT_LANE_Inhib" |
+        Event == "TOP_LANE_Inhib" ~ "Inhib",
+      TRUE ~ Event
+    ))
+
+  RELMutated <- data$REL %>%
+    mutate(Event, Event = case_when(
+      Event == "MID_LANE_BASE_TURRET" |
+        Event == "BOT_LANE_BASE_TURRET" |
+        Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
+      Event == "MID_LANE_INNER_TURRET" |
+        Event == "BOT_LANE_INNER_TURRET" |
+        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
+      Event == "MID_LANE_OUTER_TURRET" |
+        Event == "BOT_LANE_OUTER_TURRET" |
+        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
+      Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
+      Event == "MID_LANE_Inhib" |
+        Event == "BOT_LANE_Inhib" |
+        Event == "TOP_LANE_Inhib" ~ "Inhib",
+      TRUE ~ Event
+    ))
+
+  GDWMutated <- data$GDW %>%
+    mutate(goldBdiff, goldBdiff = case_when(
+      goldBdiff <= 2500 & goldBdiff > 300 ~ "bWinLow",
+      goldBdiff <= 6500 & goldBdiff > 2500 ~ "bWinMedium",
+      goldBdiff > 6500 ~ "bWinHigh",
+      goldBdiff >= -2500 & goldBdiff < -300 ~ "bLoseLow",
+      goldBdiff >= -6500 & goldBdiff < -2500 ~ "bLoseMedium",
+      goldBdiff < -6500 ~ "bLoseHigh",
+      goldBdiff >= -300 & goldBdiff <= 300 ~ "Same"
+    )) %>% rename(Event = goldBdiff)
+
+  GDLMutated <- data$GDL %>%
     mutate(goldBdiff, goldBdiff = case_when(
       goldBdiff <= 2500 & goldBdiff > 300 ~ "bWinLow",
       goldBdiff <= 6500 & goldBdiff > 2500 ~ "bWinMedium",
@@ -73,30 +110,59 @@ post_read_data_filter <- function(data) {
   # 2. Establecer el numero maximo de time steps que va a haber en base a la longitud
   # de esa partida y el argumento time_step_duration
 
-  aux_blue = blueMutated %>%
+  BEWMutatedaux = BEWMutated %>%
     nest(-Address) %>%
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
-  aux_red = redMutated %>%
+  BELMutatedaux = BELMutated %>%
     nest(-Address) %>%
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
-  aux_gd = gdMutated %>%
+  REWMutatedaux = REWMutated %>%
+    nest(-Address) %>%
+    mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
+    mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+
+  RELMutatedaux = RELMutated %>%
+    nest(-Address) %>%
+    mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
+    mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+
+  GDWMutatedaux = GDWMutated %>%
+    nest(-Address) %>%
+    mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
+    mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+
+  GDLMutatedaux = GDLMutated %>%
     nest(-Address) %>%
     mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
 
-  aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows
-  rownames(aux_blue_2) = aux_blue$Address
-  aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows
-  rownames(aux_red_2) = aux_red$Address
-  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows
-  rownames(aux_gd_2) = aux_gd$Address
+  BEWMutatedaux2 = BEWMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(BEWMutatedaux2) = BEWMutatedaux$Address
+  BELMutatedaux2 = BELMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(BELMutatedaux2) = BELMutatedaux$Address
+  REWMutatedaux2 = REWMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(REWMutatedaux2) = REWMutatedaux$Address
+  RELMutatedaux2 = RELMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(RELMutatedaux2) = RELMutatedaux$Address
+  GDWMutatedaux2 = GDWMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(GDWMutatedaux2) = GDWMutatedaux$Address
+  GDLMutatedaux2 = GDLMutatedaux$data_list %>% purrr::map(as.list) %>% bind_rows
+  rownames(GDLMutatedaux2) = GDLMutatedaux$Address
+
+
+  stsBEW <- seqdef(BEWMutatedaux2)
+  stsBEL <- seqdef(BELMutatedaux2)
+  stsREW <- seqdef(REWMutatedaux2)
+  stsREL <- seqdef(RELMutatedaux2)
+  stsGDW <- seqdef(GDWMutatedaux2)
+  stsGDL <- seqdef(GDLMutatedaux2)
 
 
   #Estos resultados pueden usarse con seqdef ya que su formato es apto, y despues pueden visualizarse con seqiplot por ejemplo
-  return(list(Blue = aux_blue_2, Red = aux_red_2, GoldDiff = aux_gd_2))
+  return(list (bResult1 = list(events_blue = stsBEW, events_red = stsREW, gold_diff = stsGDW), bResult0 = list(events_blue = stsBEL, events_red = stsREL, gold_diff = stsGDL)))
 }

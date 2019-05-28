@@ -9,8 +9,6 @@
 read_lol_kaggle_dataset <- function(input_df) {
   Data <- read.csv(file = input_df, header = TRUE, sep = ",")
 
-  #Data <- dplyr::filter(DataPre, Year > 2016) %>% dplyr::slice(91:nrows(DataPre))
-
   bDataDragons <- Data %>%
     mutate(bDragons = purrr::map(bDragons, function(x) {
       aux <- stringr::str_replace_all(x, pattern = "None", replacement = "null")
@@ -121,12 +119,13 @@ read_lol_kaggle_dataset <- function(input_df) {
 
   MIN_EVENTS = 5
   foo = FinalDataBlue %>% count(Address)
-  bar = FinalDataBlue %>% count(Address)
-  valid_addresses2 = inner_join(foo, bar, by = "Address") %>%
+  bar = FinalDataRed %>% count(Address)
+  valid_addresses = inner_join(foo, bar, by = "Address") %>%
     dplyr::filter(n.x >= MIN_EVENTS & n.y >= MIN_EVENTS) %>%
     pull(Address)
-
-  Data <- Data %>% filter(Address %in% valid_addresses2)
+  FinalDataBlue = FinalDataBlue %>% filter(Address %in% valid_addresses)
+  FinalDataRed = FinalDataRed %>% filter(Address %in% valid_addresses)
+  Data <- Data %>% filter(Address %in% valid_addresses)
 
   goldiff <- Data %>%
     mutate(golddiff = purrr::map(golddiff, function(x) {
