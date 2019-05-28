@@ -119,6 +119,15 @@ read_lol_kaggle_dataset <- function(input_df) {
   FinalDataBlue <- bind_rows(bDataTowers, bDataInhibs, bDataBarons, bDataHeralds, bDataDragons)
   FinalDataRed <- bind_rows(rDataTowers, rDataInhibs, rDataBarons, rDataHeralds, rDataDragons)
 
+  MIN_EVENTS = 5
+  foo = FinalDataBlue %>% count(Address)
+  bar = FinalDataBlue %>% count(Address)
+  valid_addresses2 = inner_join(foo, bar, by = "Address") %>%
+    dplyr::filter(n.x >= MIN_EVENTS & n.y >= MIN_EVENTS) %>%
+    pull(Address)
+
+  Data <- Data %>% filter(Address %in% valid_addresses2)
+
   goldiff <- Data %>%
     mutate(golddiff = purrr::map(golddiff, function(x) {
       jsonlite::fromJSON(toString(x)) %>% as.data.frame()
@@ -126,21 +135,23 @@ read_lol_kaggle_dataset <- function(input_df) {
     tidyr::unnest(golddiff) %>%
     dplyr::select(Address, goldBdiff = ".") %>%
     group_by(Address) %>%
-    mutate(Timestamp = row_number()) #%>%
-    # mutate(Event = purrr::map(goldBdiff, function(x) {
-    #   if(x > 0) {
-    #     "BWin"
-    #   } else if (x < 0) {
-    #     "BLose"
-    #   } else {
-    #     "Constat"
-    #   }
-    # }))
-
+    mutate(Timestamp = row_number())
 
   result <- Data %>% dplyr::select(Address, bResult)
+  win <- result %>% filter(bResult == 1)
+  lose <- result %>% filter(bResult == 0)
 
-  return(list(Blue = FinalDataBlue, Red = FinalDataRed, GoldDiff = goldiff, Result = result))
+  FDBwin = FinalDataBlue %>% filter(Address %in% unique(win$Address))
+  FDRwin = FinalDataRed %>% filter(Address %in% unique(win$Address))
+  GDwin = goldiff %>% filter(Address %in% unique(win$Address))
+
+  FDBlose = FinalDataBlue %>% filter(Address %in% lose$Address)
+  FDRlose = FinalDataRed %>% filter(Address %in% lose$Address)
+  GDlose = goldiff %>% filter(Address %in% lose$Address)
+
+
+
+  return(list(BEW = FDBwin, REW = FDRwin, GDW = GDwin, BEL = FDBlose, REL = FDRlose, GDL = GDlose))
 }
 
 #res <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")

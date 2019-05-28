@@ -59,13 +59,13 @@ post_read_data_filter <- function(data) {
 
   gdMutated <- data$GoldDiff %>%
     mutate(goldBdiff, goldBdiff = case_when(
-      goldBdiff <= 2500 & goldBdiff > 0 ~ "bWinLow",
+      goldBdiff <= 2500 & goldBdiff > 300 ~ "bWinLow",
       goldBdiff <= 6500 & goldBdiff > 2500 ~ "bWinMedium",
-      goldBdiff > 6500 ~ "bWinHight",
-      goldBdiff >= -2500 & goldBdiff < 0 ~ "bLoseLow",
+      goldBdiff > 6500 ~ "bWinHigh",
+      goldBdiff >= -2500 & goldBdiff < -300 ~ "bLoseLow",
       goldBdiff >= -6500 & goldBdiff < -2500 ~ "bLoseMedium",
-      goldBdiff < -6500 ~ "bLoseHight",
-      goldBdiff == 0 ~ "Same"
+      goldBdiff < -6500 ~ "bLoseHigh",
+      goldBdiff >= -300 & goldBdiff <= 300 ~ "Same"
     )) %>% rename(Event = goldBdiff)
 
   # TODO: Discretizar las secuencias
@@ -89,14 +89,12 @@ post_read_data_filter <- function(data) {
     mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
 
 
-  aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
+  aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows
   rownames(aux_blue_2) = aux_blue$Address
-  aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
+  aux_red_2 = aux_red$data_list %>% purrr::map(as.list) %>% bind_rows
   rownames(aux_red_2) = aux_red$Address
-  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows %>% arrange(Address)
+  aux_gd_2 = aux_gd$data_list %>% purrr::map(as.list) %>% bind_rows
   rownames(aux_gd_2) = aux_gd$Address
-
-  results <- Data$Result %>% arrange(Address)
 
 
   #Estos resultados pueden usarse con seqdef ya que su formato es apto, y despues pueden visualizarse con seqiplot por ejemplo
