@@ -8,24 +8,24 @@
 #'
 #' @examples
 fit_and_select_hmm = function(sts_data) {
-  fittedModels <- list()
+  bestModel <- as.double(1)
 
-  hmmMod <- build_hmm(sts_data, n_states = 2)
-  hmmFittedMod <- fit_model(hmmMod, threads = 8)
+  fittedModels = lapply(3:8, function (i) {
+    startT <- Sys.time()
 
-  fittedModels <- fittedModels %>% append(hmmFittedMod)
-  bestModel <- hmmFittedMod$model
-
-  for (i in 3:8) {
     hmmMod = build_hmm(sts_data, n_states = i)
     hmmFittedMod = fit_model(hmmMod, threads = 8)
 
-    fittedModels <- fittedModels %>% append(hmmFittedMod)
+    endT <- Sys.time()
 
-    if (BIC(bestModel) > BIC(hmmFittedMod$model)){
+    if(i == 2) {
+      bestModel <- hmmFittedMod$model
+    } else if (BIC(bestModel) > BIC(hmmFittedMod$model)){
       bestModel <- hmmFittedMod$model
     }
-  }
+
+    list(model = hmmFittedMod, time = (endT - startT))
+  })
 
   return(list(best = bestModel, all = fittedModels))
 }
