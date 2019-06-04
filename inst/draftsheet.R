@@ -1,52 +1,25 @@
-# Formateo de data.frame a sts (SOLO SE CONVIERTE TOTALMENTE A STS PARA EL AZUL)
-aux_blue = data$Blue %>%
-  nest(-Address) %>%
-  mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
-  mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+library(tidyr)
+library(ggplot2)
 
-aux_red = data$Red %>%
-  nest(-Address) %>%
-  mutate(data_list = purrr::map(data, function(x) x %>% arrange(Timestamp) %>% pull(Event))) %>%
-  mutate(data_list = purrr::map(data_list, function(x) purrr::set_names(x = x, nm = paste0("event", seq(1:length(x))))))
+# Pintar la evolucion del BIC
+BIC_df = data.frame(
+  N_states = sapply(TimedMD$bResult1$events_blue$all, function(x) x$model$model$n_states),
+  bResult1_eventsBlue = sapply(TimedMD$bResult1$events_blue$all, function(x) BIC(x$model$model)),
+  bResult1_eventsRed = sapply(TimedMD$bResult1$events_red$all, function(x) BIC(x$model$model)),
+  bResult1_golddiff = sapply(TimedMD$bResult1$gold_diff$all, function(x) BIC(x$model$model)),
+  bResult0_eventsBlue = sapply(TimedMD$bResult0$events_blue$all, function(x) BIC(x$model$model)),
+  bResult0_eventsRed = sapply(TimedMD$bResult0$events_red$all, function(x) BIC(x$model$model)),
+  bResult0_golddiff = sapply(TimedMD$bResult0$gold_diff$all, function(x) BIC(x$model$model))
+)
 
+BIC_df_plot = gather(data = BIC_df, key = "model", value = "BIC", -N_states)
 
-aux_blue_2 = aux_blue$data_list %>% purrr::map(as.list) %>% bind_rows
-rownames(aux_blue_2) = aux_blue$Address
-blue_sts = seqdef(aux_blue_2)
+ggplot(data = BIC_df_plot,
+       mapping = aes(x = N_states, y = BIC)) +
+  facet_wrap(facets = ~ model, scales = "free_y") +
+  geom_line() + geom_point()
 
-# Filtrado de atos por tipo de evnto, y agrupacion de eventos comunes
-data$Blue %>%
-  mutate(Event, Event = case_when(
-    Event == "MID_LANE/BASE_TURRET" |
-      Event == "BOT_LANE/BASE_TURRET" |
-      Event == "TOP_LANE/BASE_TURRET" ~ "BASE_TURRET",
-    Event == "MID_LANE/INNER_TURRET" |
-      Event == "BOT_LANE/INNER_TURRET" |
-      Event == "TOP_LANE/INNER_TURRET" ~ "BASE_TURRET",
-    TRUE ~ Event
-  ))
+# Tiempos de ejecucion
 
-# TODO: Filtrado de partidas por numero de simulaciones (inner_join)
-MIN_EVENTS = 5
-foo = data$Blue %>% count(Address)
-bar = data$Red %>% count(Address)
-valid_addresses = inner_join(foo, bar, by = "Address") %>%
-  dplyr::filter(n.x >= MIN_EVENTS & n.y >= MIN_EVENTS) %>%
-  pull(Address)
-data$Blue = data$Blue %>% filter(Address %in% valid_addresses)
-
-
-EJECUCION:
-data <- read_lol_kaggle_dataset("inst/extdata/LeagueofLegends.csv")
-datap <- post_read_data_filter(data = data)
-sdata <- seqdef(datap$Blue)
-sdata2 <- seqdef(datap$Red)
-sd <- list(sdata, sdata2)
-hmm <- build_hmm(observations = sd, n_states = 5, channel_names = c("Blue", "Red"))
-fit <- fit_hmm(hmm) ???
-
-
-SingleChannel alternative:
-   hmm <- build_hmm(observations = sdata, n_states = 5)
-   fit <- fit_hmm(hmm)
-
+# Modelos
+plot(TimedMD$bResult1$events_blue$best)

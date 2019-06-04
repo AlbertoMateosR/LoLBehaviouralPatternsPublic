@@ -16,4 +16,5 @@ Imports:
     dplyr,
     tidyr,
     purrr,
-    stringr
+    stringr,
+    ggplot2
