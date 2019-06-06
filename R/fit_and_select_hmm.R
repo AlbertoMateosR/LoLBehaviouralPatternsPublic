@@ -7,8 +7,8 @@
 #' @export
 #'
 #' @examples
-fit_and_select_hmm = function(sts_data) {
-  fittedModels = lapply(3:10, function (i) {
+fit_and_select_hmm = function(sts_data, nstates_range = 3:10) {
+  fittedModels = lapply(nstates_range, function (i) {
     startT <- Sys.time()
 
     hmmMod = build_hmm(sts_data, n_states = i)
@@ -22,9 +22,7 @@ fit_and_select_hmm = function(sts_data) {
   bestBIC = sapply(fittedModels, function(x) {x$BIC}) %>%
     min()
 
-  bestModel = lapply(fittedModels, function(x) {
-    if(x$BIC == bestBIC) {x$model$model}
-  })[[1]]
+  bestModel = Filter(function(x) x$BIC == bestBIC, fittedModels)[[1]]
 
   return(list(best = bestModel, all = fittedModels))
 }
