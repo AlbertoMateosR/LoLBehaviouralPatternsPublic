@@ -17,4 +17,5 @@ Imports:
     tidyr,
     purrr,
     stringr,
-    ggplot2
+    ggplot2,
+    igraph
