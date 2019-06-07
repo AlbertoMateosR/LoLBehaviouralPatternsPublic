@@ -16,72 +16,64 @@ post_read_data_filter <- function(data) {
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
         Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
-      Event == "MID_LANE_INNER_TURRET" |
-        Event == "BOT_LANE_INNER_TURRET" |
-        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
-      Event == "MID_LANE_OUTER_TURRET" |
-        Event == "BOT_LANE_OUTER_TURRET" |
-        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
       Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
       Event == "MID_LANE_Inhib" |
         Event == "BOT_LANE_Inhib" |
         Event == "TOP_LANE_Inhib" ~ "Inhib",
+      Event == "EARTH_DRAGON" |
+        Event == "FIRE_DRAGON" |
+        Event == "WATER_DRAGON" |
+        Event == "AIR_DRAGON" ~ "ELEMENTAL_DRAGON",
       TRUE ~ Event
-    ))
+    )) %>% filter(Event != "BASE_TURRET")
 
   BELMutated <- data$BEL %>%
     mutate(Event, Event = case_when(
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
         Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
-      Event == "MID_LANE_INNER_TURRET" |
-        Event == "BOT_LANE_INNER_TURRET" |
-        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
-      Event == "MID_LANE_OUTER_TURRET" |
-        Event == "BOT_LANE_OUTER_TURRET" |
-        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
       Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
       Event == "MID_LANE_Inhib" |
         Event == "BOT_LANE_Inhib" |
         Event == "TOP_LANE_Inhib" ~ "Inhib",
+      Event == "EARTH_DRAGON" |
+        Event == "FIRE_DRAGON" |
+        Event == "WATER_DRAGON" |
+        Event == "AIR_DRAGON" ~ "ELEMENTAL_DRAGON",
       TRUE ~ Event
-    ))
+    )) %>% filter(Event != "BASE_TURRET")
 
   REWMutated <- data$REW %>%
     mutate(Event, Event = case_when(
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
         Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
-      Event == "MID_LANE_INNER_TURRET" |
-        Event == "BOT_LANE_INNER_TURRET" |
-        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
-      Event == "MID_LANE_OUTER_TURRET" |
-        Event == "BOT_LANE_OUTER_TURRET" |
-        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
       Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
       Event == "MID_LANE_Inhib" |
         Event == "BOT_LANE_Inhib" |
         Event == "TOP_LANE_Inhib" ~ "Inhib",
+      Event == "EARTH_DRAGON" |
+        Event == "FIRE_DRAGON" |
+        Event == "WATER_DRAGON" |
+        Event == "AIR_DRAGON" ~ "ELEMENTAL_DRAGON",
       TRUE ~ Event
-    ))
+    )) %>% filter(Event != "BASE_TURRET")
 
   RELMutated <- data$REL %>%
     mutate(Event, Event = case_when(
       Event == "MID_LANE_BASE_TURRET" |
         Event == "BOT_LANE_BASE_TURRET" |
         Event == "TOP_LANE_BASE_TURRET" ~ "BASE_TURRET",
-      Event == "MID_LANE_INNER_TURRET" |
-        Event == "BOT_LANE_INNER_TURRET" |
-        Event == "TOP_LANE_INNER_TURRET" ~ "INNER_TURRET",
-      Event == "MID_LANE_OUTER_TURRET" |
-        Event == "BOT_LANE_OUTER_TURRET" |
-        Event == "TOP_LANE_OUTER_TURRET" ~ "OUTER_TURRET",
       Event == "MID_LANE_NEXUS_TURRET" ~ "NEXUS_TURRET",
       Event == "MID_LANE_Inhib" |
         Event == "BOT_LANE_Inhib" |
         Event == "TOP_LANE_Inhib" ~ "Inhib",
+      Event == "EARTH_DRAGON" |
+        Event == "FIRE_DRAGON" |
+        Event == "WATER_DRAGON" |
+        Event == "AIR_DRAGON" ~ "ELEMENTAL_DRAGON",
       TRUE ~ Event
-    ))
+    )) %>% filter(Event != "BASE_TURRET")
 
   GDWMutated <- data$GDW %>%
     mutate(goldBdiff, goldBdiff = case_when(

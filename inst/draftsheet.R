@@ -43,3 +43,5 @@ plot(TimedMD$bResult1$events_blue$best$model$model)
 plot(TimedMD$bResult1$events_blue$best$model$model, layout = layout_in_circle, edge.curved = FALSE, edge.arrow.size = 0.8, edge.label = NA, legend.prop = 0.3, vertex.size = 35, combine.slices = 0.1, cex.edge.width = 1.35, combined.slice.label = "States with probability < 0.1")
  #Triming
 plot(TimedMD$bResult1$events_blue$best$model$model, layout = layout_in_circle, edge.curved = FALSE, edge.arrow.size = 1.35, edge.label = NA, legend.prop = 0.3, vertex.size = 35, combine.slices = 0.1, cex.edge.width = 1.35, combined.slice.label = "States with probability < 0.1", trim = 0.1)
+#6 estados
+plot(TimedMD$bResult1$events_blue$all[[4]]$model$model, layout = layout_in_circle, edge.curved = FALSE, edge.arrow.size = 1.35, edge.label = NA, legend.prop = 0.3, vertex.size = 35, cex.edge.width = 1.35, combined.slice.label = "States with probability < 0.05")
